@@ -1,10 +1,27 @@
-﻿namespace NotificationFileChangeTrigger;
+﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
+
+namespace NotificationFileChangeTrigger;
 
 internal static class Program
 {
-    public static Task Main()
+    public static async Task Main()
     {
-        Console.WriteLine("Hello, World!");
-        return Task.CompletedTask;
+        using var host = HostConfig.Configure();
+
+        var loggerFactory = host.Services.GetService<ILoggerFactory>();
+        var logger = loggerFactory!.CreateLogger(nameof(Program));
+
+        try
+        {
+            await host.StartAsync().ConfigureAwait(false);
+            await host.WaitForShutdownAsync().ConfigureAwait(false);
+        }
+        catch (Exception ex)
+        {
+            logger.LogCritical("{Exception}", ex);
+            throw;
+        }
     }
 }
