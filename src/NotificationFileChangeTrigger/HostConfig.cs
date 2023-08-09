@@ -32,7 +32,6 @@ internal static class HostConfig
             services.AddHttpClient();
             services.AddSingleton<Settings>(settings);
         });
-
     }
 
     private static void ConfigureLogging(IHostBuilder hostBuilder)
