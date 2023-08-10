@@ -51,12 +51,19 @@ internal sealed record Settings
     [JsonPropertyName("fileServer")]
     public FileServerSettings FileServer { get; init; }
 
+    // Path to the folder that the file server mainly looks for events from.
+    // Example /integrations/ or just /
+    [JsonPropertyName("fileServerDirectoryWatch")]
+    public string FileServerDirectoryWatch { get; init; }
+
     [JsonConstructor]
     public Settings(
         NotificationServerSettings notificationServer,
-        FileServerSettings fileServer)
+        FileServerSettings fileServer,
+        string fileServerDirectoryWatch)
     {
         NotificationServer = notificationServer;
         FileServer = fileServer;
+        FileServerDirectoryWatch = fileServerDirectoryWatch;
     }
 }

@@ -30,7 +30,15 @@ internal sealed class NotificationFileChangeTriggerHost : BackgroundService
         var subscribeFileChangesTask = _fileChangedSubscriber
             .Subscribe(fileChangedCh.Writer, stoppingToken);
 
-        // This is ugly will be fixed as soon as we start processing events.
-        await subscribeFileChangesTask.ConfigureAwait(false);
+        var consumeTask = Task.Run(async () =>
+        {
+            await foreach (var fileChanged in fileChangedCh.Reader.ReadAllAsync(stoppingToken))
+            {
+                _logger.LogInformation("{FileName}", fileChanged.FullPath);
+            }
+        }, stoppingToken);
+
+        _logger.LogInformation("Starting subscriber and consumer.");
+        await Task.WhenAll(subscribeFileChangesTask, consumeTask).ConfigureAwait(false);
     }
 }

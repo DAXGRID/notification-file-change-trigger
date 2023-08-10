@@ -5,6 +5,7 @@ using Microsoft.Extensions.Hosting;
 using Serilog;
 using Serilog.Events;
 using Serilog.Formatting.Compact;
+using NotificationFileChangeTrigger.FileServer;
 
 namespace NotificationFileChangeTrigger;
 
@@ -31,6 +32,7 @@ internal static class HostConfig
             services.AddHostedService<NotificationFileChangeTriggerHost>();
             services.AddHttpClient();
             services.AddSingleton<Settings>(settings);
+            services.AddSingleton<FileChangedSubscriber>();
         });
     }
 
