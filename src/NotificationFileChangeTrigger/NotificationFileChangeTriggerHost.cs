@@ -1,7 +1,8 @@
-using System.Threading.Channels;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using NotificationFileChangeTrigger.FileServer;
+using System.Text.RegularExpressions;
+using System.Threading.Channels;
 
 namespace NotificationFileChangeTrigger;
 
@@ -9,13 +10,16 @@ internal sealed class NotificationFileChangeTriggerHost : BackgroundService
 {
     private readonly ILogger<NotificationFileChangeTriggerHost> _logger;
     private readonly FileChangedSubscriber _fileChangedSubscriber;
+    private readonly Settings _settings;
 
     public NotificationFileChangeTriggerHost(
         ILogger<NotificationFileChangeTriggerHost> logger,
-        FileChangedSubscriber fileChangedSubscriber)
+        FileChangedSubscriber fileChangedSubscriber,
+        Settings settings)
     {
         _logger = logger;
         _fileChangedSubscriber = fileChangedSubscriber;
+        _settings = settings;
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -30,11 +34,19 @@ internal sealed class NotificationFileChangeTriggerHost : BackgroundService
         var subscribeFileChangesTask = _fileChangedSubscriber
             .Subscribe(fileChangedCh.Writer, stoppingToken);
 
+        var fileMatchesRegex = _settings.FileNotificationMatches
+            .Select(x => new Regex(x));
+
         var consumeTask = Task.Run(async () =>
         {
             await foreach (var fileChanged in fileChangedCh.Reader.ReadAllAsync(stoppingToken))
             {
-                _logger.LogInformation("{FileName}", fileChanged.FullPath);
+                if (!fileMatchesRegex.Any(x => x.IsMatch(fileChanged.FullPath)))
+                {
+                    continue;
+                }
+
+                _logger.LogInformation("Processing {FileName}.", fileChanged.FullPath);
             }
         }, stoppingToken);
 

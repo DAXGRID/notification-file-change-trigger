@@ -16,6 +16,10 @@ public sealed record FileChangedEvent
     [JsonPropertyName("fullPath")]
     public string FullPath { get; init; }
 
+    public string FileName => Path.GetFileName(FullPath);
+
+    public string DirectoryName => Path.GetDirectoryName(FullPath) ?? "";
+
     public FileChangedEvent(string fullPath)
     {
         EventId = Guid.NewGuid();
