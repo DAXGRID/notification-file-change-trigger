@@ -11,15 +11,18 @@ internal sealed class NotificationFileChangeTriggerHost : BackgroundService
     private readonly ILogger<NotificationFileChangeTriggerHost> _logger;
     private readonly FileChangedSubscriber _fileChangedSubscriber;
     private readonly Settings _settings;
+    private readonly HttpClient _httpClient;
 
     public NotificationFileChangeTriggerHost(
         ILogger<NotificationFileChangeTriggerHost> logger,
         FileChangedSubscriber fileChangedSubscriber,
-        Settings settings)
+        Settings settings,
+        HttpClient httpClient)
     {
         _logger = logger;
         _fileChangedSubscriber = fileChangedSubscriber;
         _settings = settings;
+        _httpClient = httpClient;
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -28,6 +31,12 @@ internal sealed class NotificationFileChangeTriggerHost : BackgroundService
             "Starting {Host}.",
             nameof(NotificationFileChangeTriggerHost));
 
+        var httpFileServer = new HttpFileServer(
+            _httpClient,
+            _settings.FileServer.Username,
+            _settings.FileServer.Password,
+            new Uri(_settings.FileServer.Uri));
+
         var fileChangedCh = Channel.CreateUnbounded<FileChangedEvent>();
 
         // After we have pushed initial load, we subscribe for future changes.
@@ -35,18 +44,44 @@ internal sealed class NotificationFileChangeTriggerHost : BackgroundService
             .Subscribe(fileChangedCh.Writer, stoppingToken);
 
         var fileMatchesRegex = _settings.FileNotificationMatches
-            .Select(x => new Regex(x));
+            .Select(x => new Regex(x))
+            .ToArray();
 
         var consumeTask = Task.Run(async () =>
         {
-            await foreach (var fileChanged in fileChangedCh.Reader.ReadAllAsync(stoppingToken))
+            await foreach (var fileChange in fileChangedCh.Reader.ReadAllAsync(stoppingToken))
             {
-                if (!fileMatchesRegex.Any(x => x.IsMatch(fileChanged.FullPath)))
+                _logger.LogInformation("Received file change {FileFullPath}", fileChange.FullPath);
+                if (!fileMatchesRegex.Any(x => x.IsMatch(fileChange.FullPath)))
                 {
                     continue;
                 }
 
-                _logger.LogInformation("Processing {FileName}.", fileChanged.FullPath);
+                _logger.LogInformation(
+                    "Downloading {AbsoluteUri}.",
+                    fileChange.FullPath);
+
+                var fileByteAsyncEnumerable = httpFileServer
+                    .DownloadFile(fileChange.FullPath)
+                    .ConfigureAwait(false);
+
+                var downloadedFileOutputPath = $"{_settings.OutputDirectoryPath}{fileChange.FileName}";
+
+                using var fileStream = new FileStream(
+                    downloadedFileOutputPath,
+                    FileMode.Create,
+                    FileAccess.Write);
+
+                await foreach (var buffer in fileByteAsyncEnumerable)
+                {
+                    await fileStream.WriteAsync(buffer).ConfigureAwait(false);
+                }
+
+                await fileStream.FlushAsync().ConfigureAwait(false);
+                _logger.LogInformation(
+                    "Finished downloading {FileName} to {OutputFullPath}.",
+                    fileChange.FullPath,
+                    downloadedFileOutputPath);
             }
         }, stoppingToken);
 

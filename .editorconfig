@@ -9,3 +9,7 @@ dotnet_diagnostic.CA1848.severity = none
 # CA1812: We remove this since we mainly use dependency injection,
 # so a lot of classes might seem that they have not been instantiated.
 dotnet_diagnostic.CA1812.severity = none
+
+# CA2234: CA2234: Pass System.Uri objects instead of strings
+# We do not care because this solution is so simple.
+dotnet_diagnostic.CA2234.severity = none

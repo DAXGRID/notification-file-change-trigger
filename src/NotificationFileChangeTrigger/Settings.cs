@@ -54,14 +54,19 @@ internal sealed record Settings
     [JsonPropertyName("fileNotificationMatches")]
     public IReadOnlyList<string> FileNotificationMatches { get; init; }
 
+    [JsonPropertyName("outputDirectoryPath")]
+    public string OutputDirectoryPath { get; init; }
+
     [JsonConstructor]
     public Settings(
         NotificationServerSettings notificationServer,
         FileServerSettings fileServer,
-        IReadOnlyList<string> fileNotificationMatches)
+        IReadOnlyList<string> fileNotificationMatches,
+        string outputDirectoryPath)
     {
         NotificationServer = notificationServer;
         FileServer = fileServer;
         FileNotificationMatches = fileNotificationMatches;
+        OutputDirectoryPath = outputDirectoryPath;
     }
 }
