@@ -52,37 +52,60 @@ internal sealed class NotificationFileChangeTriggerHost : BackgroundService
         {
             await foreach (var fileChange in fileChangedCh.Reader.ReadAllAsync(stoppingToken))
             {
-                _logger.LogInformation("Received file change {FileFullPath}", fileChange.FullPath);
-                if (!fileMatchesRegex.Any(x => x.IsMatch(fileChange.FullPath)))
+                try
                 {
-                    continue;
+                    _logger.LogInformation("Received file change {FileFullPath}", fileChange.FullPath);
+                    if (!fileMatchesRegex.Any(x => x.IsMatch(fileChange.FullPath)))
+                    {
+                        continue;
+                    }
+
+                    _logger.LogInformation(
+                        "Downloading {AbsoluteUri}.",
+                        fileChange.FullPath);
+
+                    var fileByteAsyncEnumerable = httpFileServer
+                        .DownloadFile(fileChange.FullPath)
+                        .ConfigureAwait(false);
+
+                    var downloadedFileOutputPath = $"{_settings.OutputDirectoryPath}{fileChange.FileName}";
+
+                    using var fileStream = new FileStream(
+                        downloadedFileOutputPath,
+                        FileMode.Create,
+                        FileAccess.Write);
+
+                    await foreach (var buffer in fileByteAsyncEnumerable)
+                    {
+                        await fileStream.WriteAsync(buffer).ConfigureAwait(false);
+                    }
+
+                    await fileStream.FlushAsync().ConfigureAwait(false);
+                    _logger.LogInformation(
+                        "Finished downloading {FileName} to {OutputFullPath}.",
+                        fileChange.FullPath,
+                        downloadedFileOutputPath);
+
+                    _logger.LogInformation(
+                        "Executing the following command: {Command}",
+                        _settings.TriggerCommand);
+
+                    var triggerResult = Trigger.Execute(_settings.TriggerCommand, downloadedFileOutputPath);
+
+                    if (!triggerResult.success)
+                    {
+                        throw new TriggerException(triggerResult.message);
+                    }
+
+                    _logger.LogInformation(
+                        "Finished processing {FileChange}. {TriggerOutput}",
+                        fileChange.FileName,
+                        triggerResult.message);
                 }
-
-                _logger.LogInformation(
-                    "Downloading {AbsoluteUri}.",
-                    fileChange.FullPath);
-
-                var fileByteAsyncEnumerable = httpFileServer
-                    .DownloadFile(fileChange.FullPath)
-                    .ConfigureAwait(false);
-
-                var downloadedFileOutputPath = $"{_settings.OutputDirectoryPath}{fileChange.FileName}";
-
-                using var fileStream = new FileStream(
-                    downloadedFileOutputPath,
-                    FileMode.Create,
-                    FileAccess.Write);
-
-                await foreach (var buffer in fileByteAsyncEnumerable)
+                catch (TriggerException ex)
                 {
-                    await fileStream.WriteAsync(buffer).ConfigureAwait(false);
+                    _logger.LogCritical("{Exception}", ex);
                 }
-
-                await fileStream.FlushAsync().ConfigureAwait(false);
-                _logger.LogInformation(
-                    "Finished downloading {FileName} to {OutputFullPath}.",
-                    fileChange.FullPath,
-                    downloadedFileOutputPath);
             }
         }, stoppingToken);
 

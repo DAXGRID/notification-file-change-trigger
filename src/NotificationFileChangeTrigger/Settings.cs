@@ -57,16 +57,21 @@ internal sealed record Settings
     [JsonPropertyName("outputDirectoryPath")]
     public string OutputDirectoryPath { get; init; }
 
+    [JsonPropertyName("triggerCommmand")]
+    public string TriggerCommand { get; init; }
+
     [JsonConstructor]
     public Settings(
         NotificationServerSettings notificationServer,
         FileServerSettings fileServer,
         IReadOnlyList<string> fileNotificationMatches,
-        string outputDirectoryPath)
+        string outputDirectoryPath,
+        string triggerCommand)
     {
         NotificationServer = notificationServer;
         FileServer = fileServer;
         FileNotificationMatches = fileNotificationMatches;
         OutputDirectoryPath = outputDirectoryPath;
+        TriggerCommand = triggerCommand;
     }
 }
