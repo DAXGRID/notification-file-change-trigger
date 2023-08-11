@@ -2,10 +2,10 @@ using System.Text.Json;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using NotificationFileChangeTrigger.Notification;
 using Serilog;
 using Serilog.Events;
 using Serilog.Formatting.Compact;
-using NotificationFileChangeTrigger.FileServer;
 
 namespace NotificationFileChangeTrigger;
 

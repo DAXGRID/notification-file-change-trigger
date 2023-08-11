@@ -1,6 +1,7 @@
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using NotificationFileChangeTrigger.FileServer;
+using NotificationFileChangeTrigger.Notification;
 using System.Text.RegularExpressions;
 using System.Threading.Channels;
 

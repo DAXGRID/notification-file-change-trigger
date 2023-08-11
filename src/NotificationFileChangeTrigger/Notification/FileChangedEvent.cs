@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace NotificationFileChangeTrigger.FileServer;
+namespace NotificationFileChangeTrigger.Notification;
 
 public sealed record FileChangedEvent
 {

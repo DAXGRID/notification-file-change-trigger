@@ -4,7 +4,7 @@ using System.Text.Json;
 using System.Threading.Channels;
 using NotificationClient = OpenFTTH.NotificationClient.Client;
 
-namespace NotificationFileChangeTrigger.FileServer;
+namespace NotificationFileChangeTrigger.Notification;
 
 internal sealed class FileChangedSubscriber : IDisposable
 {
