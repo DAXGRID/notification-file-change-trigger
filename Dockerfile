@@ -21,6 +21,7 @@ RUN dotnet publish -c Release -o out --packages ./packages
 # Build runtime image
 FROM mcr.microsoft.com/dotnet/runtime:${DOTNET_VERSION}
 
+# Enable the use of bash and the use of ogr2ogr by installing gdal.
 RUN apt-get update && \
     apt-get install -y bash gdal-bin
 
