@@ -1,3 +1,4 @@
+using System.Net;
 using System.Net.Http.Headers;
 using System.Text;
 
@@ -37,6 +38,23 @@ internal sealed class HttpFileServer
             read = buffer.Length;
             yield return buffer;
         } while (read == bufferCount);
+    }
+
+    public async Task DeleteResource(string name, string dirPath)
+    {
+        var response = await _httpClient
+            .PostAsync($"{dirPath}?delete&name={name}&contextquerystring=", null)
+            .ConfigureAwait(false);
+
+        if (response.StatusCode != HttpStatusCode.Found)
+        {
+            var errorMessage = await response.Content
+                .ReadAsStringAsync()
+                .ConfigureAwait(false);
+
+            throw new DeleteFileException(
+                $"Could not delete resource. '{errorMessage}'");
+        }
     }
 
     private static string BasicAuthToken(string username, string password)

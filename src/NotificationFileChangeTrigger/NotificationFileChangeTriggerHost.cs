@@ -97,6 +97,14 @@ internal sealed class NotificationFileChangeTriggerHost : BackgroundService
                         throw new TriggerException(triggerResult.message);
                     }
 
+                    if (_settings.RemoveFileOnFileServerWhenCompleted)
+                    {
+                        _logger.LogInformation("Removing file on file server {FileName}.", fileChange.FullPath);
+                        await httpFileServer
+                            .DeleteResource(fileChange.DirectoryName, fileChange.FileName)
+                            .ConfigureAwait(false);
+                    }
+
                     _logger.LogInformation(
                         "Finished processing {FileChange}. {TriggerOutput}",
                         fileChange.FileName,

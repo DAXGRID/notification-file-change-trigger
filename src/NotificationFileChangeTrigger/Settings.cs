@@ -60,18 +60,23 @@ internal sealed record Settings
     [JsonPropertyName("triggerCommmand")]
     public string TriggerCommand { get; init; }
 
+    [JsonPropertyName("removeFileOnFileServerWhenCompleted")]
+    public bool RemoveFileOnFileServerWhenCompleted { get; init; }
+
     [JsonConstructor]
     public Settings(
         NotificationServerSettings notificationServer,
         FileServerSettings fileServer,
         IReadOnlyList<string> fileNotificationMatches,
         string outputDirectoryPath,
-        string triggerCommand)
+        string triggerCommand,
+        bool removeFileOnFileServerWhenCompleted)
     {
         NotificationServer = notificationServer;
         FileServer = fileServer;
         FileNotificationMatches = fileNotificationMatches;
         OutputDirectoryPath = outputDirectoryPath;
         TriggerCommand = triggerCommand;
+        RemoveFileOnFileServerWhenCompleted = removeFileOnFileServerWhenCompleted;
     }
 }
