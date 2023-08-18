@@ -12,18 +12,15 @@ internal sealed class NotificationFileChangeTriggerHost : BackgroundService
     private readonly ILogger<NotificationFileChangeTriggerHost> _logger;
     private readonly FileChangedSubscriber _fileChangedSubscriber;
     private readonly Settings _settings;
-    private readonly HttpClient _httpClient;
 
     public NotificationFileChangeTriggerHost(
         ILogger<NotificationFileChangeTriggerHost> logger,
         FileChangedSubscriber fileChangedSubscriber,
-        Settings settings,
-        HttpClient httpClient)
+        Settings settings)
     {
         _logger = logger;
         _fileChangedSubscriber = fileChangedSubscriber;
         _settings = settings;
-        _httpClient = httpClient;
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -32,8 +29,18 @@ internal sealed class NotificationFileChangeTriggerHost : BackgroundService
             "Starting {Host}.",
             nameof(NotificationFileChangeTriggerHost));
 
+        using var httpClientHandler = new HttpClientHandler
+        {
+            // The file-server might return redirects,
+            // we do not want to follow the redirects.
+            AllowAutoRedirect = false,
+            CheckCertificateRevocationList = true,
+        };
+
+        using var httpClient = new HttpClient(httpClientHandler);
+
         var httpFileServer = new HttpFileServer(
-            _httpClient,
+            httpClient,
             _settings.FileServer.Username,
             _settings.FileServer.Password,
             new Uri(_settings.FileServer.Uri));
@@ -99,9 +106,10 @@ internal sealed class NotificationFileChangeTriggerHost : BackgroundService
 
                     if (_settings.RemoveFileOnFileServerWhenCompleted)
                     {
-                        _logger.LogInformation("Removing file on file server {FileName}.", fileChange.FullPath);
+                        _logger.LogInformation(
+                            "Removing file on file server {FileName}.", fileChange.FullPath);
                         await httpFileServer
-                            .DeleteResource(fileChange.DirectoryName, fileChange.FileName)
+                            .DeleteResource(fileChange.FileName, fileChange.DirectoryName)
                             .ConfigureAwait(false);
                     }
 
@@ -110,9 +118,11 @@ internal sealed class NotificationFileChangeTriggerHost : BackgroundService
                         fileChange.FileName,
                         triggerResult.message);
                 }
-                catch (TriggerException ex)
+                catch (Exception ex)
                 {
-                    _logger.LogCritical("{Exception}", ex);
+                    _logger.LogCritical("Unhandled {Exception}, stopping service.", ex);
+                    fileChangedCh.Writer.Complete(ex);
+                    throw;
                 }
             }
         }, stoppingToken);

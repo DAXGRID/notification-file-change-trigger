@@ -42,8 +42,15 @@ internal sealed class HttpFileServer
 
     public async Task DeleteResource(string name, string dirPath)
     {
+        using var formContent = new FormUrlEncodedContent(
+            new Dictionary<string, string>
+            {
+                { "name", name },
+                { "contextquerystring", "" },
+            });
+
         var response = await _httpClient
-            .PostAsync($"{dirPath}?delete&name={name}&contextquerystring=", null)
+            .PostAsync($"{dirPath}?delete", formContent)
             .ConfigureAwait(false);
 
         if (response.StatusCode != HttpStatusCode.Found)

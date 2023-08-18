@@ -30,7 +30,6 @@ internal static class HostConfig
         hostBuilder.ConfigureServices((hostContext, services) =>
         {
             services.AddHostedService<NotificationFileChangeTriggerHost>();
-            services.AddHttpClient();
             services.AddSingleton<Settings>(settings);
             services.AddSingleton<FileChangedSubscriber>();
         });
