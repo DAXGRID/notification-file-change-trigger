@@ -47,13 +47,36 @@ internal sealed class NotificationFileChangeTriggerHost : BackgroundService
 
         var fileChangedCh = Channel.CreateUnbounded<FileChangedEvent>();
 
-        // After we have pushed initial load, we subscribe for future changes.
-        var subscribeFileChangesTask = _fileChangedSubscriber
-            .Subscribe(fileChangedCh.Writer, stoppingToken);
-
         var fileMatchesRegex = _settings.FileNotificationMatches
             .Select(x => new Regex(x))
             .ToArray();
+
+        foreach (var initialLoadDirPath in _settings.InitialLoadDirectories)
+        {
+            var initialLoadFiles = await httpFileServer
+                .ListFiles(initialLoadDirPath)
+                .ConfigureAwait(false);
+
+            foreach (var initialLoadFile in initialLoadFiles)
+            {
+                if (fileMatchesRegex.Any(x => x.IsMatch(initialLoadFile.FullPath)))
+                {
+                    _logger.LogInformation(
+                        "Pushing initial load {FileName}.",
+                        initialLoadFile.FullPath);
+
+                    await fileChangedCh.Writer
+                        .WriteAsync(
+                            new FileChangedEvent(initialLoadFile.FullPath),
+                            stoppingToken)
+                        .ConfigureAwait(false);
+                }
+            }
+        }
+
+        // After we have pushed initial load, we subscribe for future changes.
+        var subscribeFileChangesTask = _fileChangedSubscriber
+            .Subscribe(fileChangedCh.Writer, stoppingToken);
 
         var consumeTask = Task.Run(async () =>
         {

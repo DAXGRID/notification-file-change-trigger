@@ -63,6 +63,9 @@ internal sealed record Settings
     [JsonPropertyName("removeFileOnFileServerWhenCompleted")]
     public bool RemoveFileOnFileServerWhenCompleted { get; init; }
 
+    [JsonPropertyName("initialLoadDirectories")]
+    public IReadOnlyList<string> InitialLoadDirectories { get; init; }
+
     [JsonConstructor]
     public Settings(
         NotificationServerSettings notificationServer,
@@ -70,7 +73,8 @@ internal sealed record Settings
         IReadOnlyList<string> fileNotificationMatches,
         string outputDirectoryPath,
         string triggerCommand,
-        bool removeFileOnFileServerWhenCompleted)
+        bool removeFileOnFileServerWhenCompleted,
+        IReadOnlyList<string> initialLoadDirectories)
     {
         NotificationServer = notificationServer;
         FileServer = fileServer;
@@ -78,5 +82,6 @@ internal sealed record Settings
         OutputDirectoryPath = outputDirectoryPath;
         TriggerCommand = triggerCommand;
         RemoveFileOnFileServerWhenCompleted = removeFileOnFileServerWhenCompleted;
+        InitialLoadDirectories = initialLoadDirectories;
     }
 }
