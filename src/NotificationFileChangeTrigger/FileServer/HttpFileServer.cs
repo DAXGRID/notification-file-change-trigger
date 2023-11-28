@@ -82,8 +82,8 @@ internal sealed class HttpFileServer
         return htmlDocument.DocumentNode
             .Descendants("ul")
             .Where(x => x.Attributes["class"].Value == "item-list has-deletable")
-            .First()
-            .Descendants()
+            .FirstOrDefault()
+            ?.Descendants()
             .Where(x => x.Attributes["class"]?.Value == "detail")
             .Select(x => x.InnerText
                     .Trim()
@@ -102,7 +102,7 @@ internal sealed class HttpFileServer
                     CultureInfo.InvariantCulture);
 
                 return new FileServerFileInfo(name, dirPath, size, created);
-            });
+            }) ?? new List<FileServerFileInfo>();
     }
 
     /// <summary>
