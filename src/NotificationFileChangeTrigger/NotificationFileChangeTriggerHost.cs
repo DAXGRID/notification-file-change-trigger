@@ -84,11 +84,14 @@ internal sealed class NotificationFileChangeTriggerHost : BackgroundService
             {
                 try
                 {
-                    _logger.LogInformation("Received file change {FileFullPath}", fileChange.FullPath);
                     if (!fileMatchesRegex.Any(x => x.IsMatch(fileChange.FullPath)))
                     {
                         continue;
                     }
+
+                    _logger.LogInformation(
+                        "Received file change {FileFullPath}",
+                        fileChange.FullPath);
 
                     _logger.LogInformation(
                         "Downloading {AbsoluteUri}.",
