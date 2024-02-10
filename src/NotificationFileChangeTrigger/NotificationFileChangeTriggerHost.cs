@@ -147,7 +147,7 @@ internal sealed class NotificationFileChangeTriggerHost : BackgroundService
                 catch (Exception ex)
                 {
                     _logger.LogCritical("Unhandled {Exception}, stopping service.", ex);
-                    fileChangedCh.Writer.Complete(ex);
+                    fileChangedCh.Writer.TryComplete(ex);
                     throw;
                 }
             }

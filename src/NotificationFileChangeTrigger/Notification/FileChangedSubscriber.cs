@@ -53,13 +53,13 @@ internal sealed class FileChangedSubscriber : IDisposable
                 }
             }
         }
-        catch (Exception)
+        catch (Exception ex)
         {
             // If an exception happens, we want to close the connection
             // and mark the channel as completed, so the consumers know
             // can stop consuming from it.
             Dispose();
-            output.Complete();
+            output.TryComplete(ex);
             throw;
         }
     }
