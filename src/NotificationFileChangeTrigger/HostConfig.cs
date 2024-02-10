@@ -19,7 +19,7 @@ internal static class HostConfig
         return hostBuilder.Build();
     }
 
-    private static void ConfigureServices(IHostBuilder hostBuilder)
+    private static void ConfigureServices(HostBuilder hostBuilder)
     {
         var settingsJson = JsonDocument.Parse(File.ReadAllText("appsettings.json"))
             .RootElement.GetProperty("settings").ToString();
@@ -35,7 +35,7 @@ internal static class HostConfig
         });
     }
 
-    private static void ConfigureLogging(IHostBuilder hostBuilder)
+    private static void ConfigureLogging(HostBuilder hostBuilder)
     {
         hostBuilder.ConfigureServices((hostContext, services) =>
         {

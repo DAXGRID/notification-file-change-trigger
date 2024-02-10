@@ -16,9 +16,4 @@ public class DeleteFileException : Exception
         string? message, Exception? innerException) : base(message, innerException)
     {
     }
-
-    protected DeleteFileException(
-        SerializationInfo info, StreamingContext context) : base(info, context)
-    {
-    }
 }
