@@ -1,5 +1,5 @@
 ARG PROJECT_NAME=NotificationFileChangeTrigger
-ARG DOTNET_VERSION=7.0
+ARG DOTNET_VERSION=8.0
 
 FROM mcr.microsoft.com/dotnet/sdk:${DOTNET_VERSION} AS build-env
 
