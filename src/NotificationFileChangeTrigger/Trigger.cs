@@ -4,7 +4,7 @@ namespace NotificationFileChangeTrigger;
 
 internal static class Trigger
 {
-    public static (bool success, string message) Execute(string command, string fileName)
+    public static (bool success, string message, string? errorMessage) Execute(string command, string fileName)
     {
         using var proc = new Process
         {
@@ -25,8 +25,8 @@ internal static class Trigger
 
         return proc.ExitCode switch
         {
-            not 0 => (false, proc.StandardError.ReadToEnd()),
-            _ => (true, proc.StandardOutput.ReadToEnd())
+            not 0 => (false, proc.StandardOutput.ReadToEnd(), proc.StandardError.ReadToEnd()),
+            _ => (true, proc.StandardOutput.ReadToEnd(), null)
         };
     }
 }
