@@ -123,7 +123,8 @@ internal sealed class NotificationFileChangeTriggerHost : BackgroundService
 
                     if (!triggerResult.success)
                     {
-                        throw new TriggerException($"StdOut: {triggerResult.message}, StdErr: {triggerResult.errorMessage}");
+                        throw new TriggerException(
+                            $"StdOut: {triggerResult.message}, StdErr: {triggerResult.errorMessage}");
                     }
 
                     if (_settings.RemoveFileOnFileServerWhenCompleted)
