@@ -111,13 +111,13 @@ internal sealed class HttpFileServer
     /// </summary>
     private static ulong SizeShortHandToByteCount(string text)
     {
-        var defaultParseLong = ulong (string x) =>
+        static ulong DefaultParseLong(string x)
         {
             return ulong.Parse(
                 x,
                 NumberStyles.Integer,
                 CultureInfo.InvariantCulture);
-        };
+        }
 
         const string kibiBytes = "K";
         const string mibiBytes = "M";
@@ -126,19 +126,19 @@ internal sealed class HttpFileServer
         var textUpperCase = text.ToUpperInvariant();
         if (textUpperCase.Contains(kibiBytes, StringComparison.OrdinalIgnoreCase))
         {
-            return defaultParseLong(textUpperCase.Split(kibiBytes)[0]) * 1024;
+            return DefaultParseLong(textUpperCase.Split(kibiBytes)[0]) * 1024;
         }
         else if (textUpperCase.Contains(mibiBytes, StringComparison.OrdinalIgnoreCase))
         {
-            return defaultParseLong(textUpperCase.Split(mibiBytes)[0]) * 1024 * 1024;
+            return DefaultParseLong(textUpperCase.Split(mibiBytes)[0]) * 1024 * 1024;
         }
         else if (textUpperCase.Contains(gibiBytes, StringComparison.OrdinalIgnoreCase))
         {
-            return defaultParseLong(textUpperCase.Split(gibiBytes)[0]) * 1024 * 1024 * 1024;
+            return DefaultParseLong(textUpperCase.Split(gibiBytes)[0]) * 1024 * 1024 * 1024;
         }
         else // Bytes
         {
-            return defaultParseLong(text);
+            return DefaultParseLong(text);
         }
     }
 
