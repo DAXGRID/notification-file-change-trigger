@@ -90,11 +90,7 @@ internal sealed class NotificationFileChangeTriggerHost : BackgroundService
                     }
 
                     _logger.LogInformation(
-                        "Received file change {FileFullPath}",
-                        fileChange.FullPath);
-
-                    _logger.LogInformation(
-                        "Downloading {AbsoluteUri}.",
+                        "Received file change. Starting downloading {AbsoluteUri}.",
                         fileChange.FullPath);
 
                     var fileByteAsyncEnumerable = httpFileServer
