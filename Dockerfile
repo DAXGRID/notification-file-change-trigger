@@ -23,7 +23,7 @@ FROM mcr.microsoft.com/dotnet/runtime:${DOTNET_VERSION}-jammy-amd64
 
 # Enable the use of bash and the use of ogr2ogr by installing gdal.
 RUN apt-get update && \
-    apt-get install -y bash gdal-bin zip libarchive-tools
+    apt-get install -y bash gdal-bin zip
 
 # Renew the ARG argument for it to be available in this build context.
 ARG PROJECT_NAME
