@@ -43,7 +43,7 @@ internal static class Trigger
         proc.BeginOutputReadLine();
         proc.BeginErrorReadLine();
 
-        proc.WaitForExitAsync();
+        proc.WaitForExit();
 
         return proc.ExitCode switch
         {
