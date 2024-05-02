@@ -4,7 +4,7 @@ namespace NotificationFileChangeTrigger;
 
 internal static class Trigger
 {
-    public static (bool success, string message, string? errorMessage) Execute(string command, string fileName)
+    public static bool Execute(string command, string fileName, Action<string> logInformation, Action<string> logError)
     {
         using var proc = new Process
         {
@@ -16,17 +16,39 @@ internal static class Trigger
                 RedirectStandardOutput = true,
                 RedirectStandardError = true,
                 CreateNoWindow = true,
-                EnvironmentVariables = { { "TRIGGER_FILE_NAME", fileName } }
+                EnvironmentVariables = { { "TRIGGER_FILE_NAME", fileName } },
+            }
+        };
+
+        // Read stdout and stderr asynchronously
+        proc.OutputDataReceived += (sender, e) =>
+        {
+            if (!string.IsNullOrEmpty(e.Data))
+            {
+                logInformation(e.Data);
+            }
+        };
+
+        proc.ErrorDataReceived += (sender, e) =>
+        {
+            if (!string.IsNullOrEmpty(e.Data))
+            {
+                logError(e.Data);
             }
         };
 
         proc.Start();
-        proc.WaitForExit();
+
+        // Begin asynchronously reading stdout and stderr
+        proc.BeginOutputReadLine();
+        proc.BeginErrorReadLine();
+
+        proc.WaitForExitAsync();
 
         return proc.ExitCode switch
         {
-            not 0 => (false, proc.StandardOutput.ReadToEnd(), proc.StandardError.ReadToEnd()),
-            _ => (true, proc.StandardOutput.ReadToEnd(), null)
+            not 0 => false,
+            _ => true
         };
     }
 }

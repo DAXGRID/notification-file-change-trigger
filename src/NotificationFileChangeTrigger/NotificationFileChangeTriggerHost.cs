@@ -119,12 +119,18 @@ internal sealed class NotificationFileChangeTriggerHost : BackgroundService
                         "Executing the following command: {Command}",
                         _settings.TriggerCommand);
 
-                    var triggerResult = Trigger.Execute(_settings.TriggerCommand, downloadedFileOutputPath);
+                    var triggerResult = Trigger.Execute(
+                        _settings.TriggerCommand,
+                        downloadedFileOutputPath,
+                        (string msg) => _logger.LogInformation("{InformationMessage}", msg),
+                        (string msg) => _logger.LogError("{ErrorMessage}", msg)
+                    );
 
-                    if (!triggerResult.success)
+                    if (!triggerResult)
                     {
-                        throw new TriggerException(
-                            $"StdOut: {triggerResult.message}, StdErr: {triggerResult.errorMessage}");
+                        // The message is written to the log, in the trigger result, so we just
+                        // want the process to die here.
+                        throw new TriggerException($"The trigger failed for the file: '{downloadedFileOutputPath}'.");
                     }
 
                     if (_settings.RemoveFileOnFileServerWhenCompleted)
@@ -136,10 +142,7 @@ internal sealed class NotificationFileChangeTriggerHost : BackgroundService
                             .ConfigureAwait(false);
                     }
 
-                    _logger.LogInformation(
-                        "Finished processing {FileChange}. {TriggerOutput}",
-                        fileChange.FileName,
-                        triggerResult.message);
+                    _logger.LogInformation("Finished processing {FileChange}.", fileChange.FileName);
                 }
                 catch (Exception ex)
                 {
