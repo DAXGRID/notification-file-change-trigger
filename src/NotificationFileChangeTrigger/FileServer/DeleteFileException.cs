@@ -1,5 +1,3 @@
-using System.Runtime.Serialization;
-
 namespace NotificationFileChangeTrigger.FileServer;
 
 public class DeleteFileException : Exception
