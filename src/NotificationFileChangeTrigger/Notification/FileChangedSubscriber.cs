@@ -25,14 +25,14 @@ internal sealed class FileChangedSubscriber : IDisposable
 
     public async Task Subscribe(
         ChannelWriter<FileChangedEvent> output,
-        CancellationToken cancellationToken = default)
+        CancellationTokenSource cancellationTokenSource)
     {
         try
         {
             var notificationCh = _notificationClient.Connect();
 
             var notifications = notificationCh
-                .ReadAllAsync(cancellationToken)
+                .ReadAllAsync(cancellationTokenSource.Token)
                 .ConfigureAwait(false);
 
             await foreach (var notification in notifications)
@@ -48,7 +48,7 @@ internal sealed class FileChangedSubscriber : IDisposable
                             $"Could not deserialize {nameof(FileChangedEvent)}");
                     }
 
-                    await output.WriteAsync(fileChangedEvent, cancellationToken)
+                    await output.WriteAsync(fileChangedEvent, cancellationTokenSource.Token)
                         .ConfigureAwait(false);
                 }
             }
@@ -60,6 +60,7 @@ internal sealed class FileChangedSubscriber : IDisposable
             // can stop consuming from it.
             Dispose();
             output.TryComplete(ex);
+            await cancellationTokenSource.CancelAsync().ConfigureAwait(false);
             throw;
         }
     }

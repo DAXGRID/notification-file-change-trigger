@@ -25,6 +25,8 @@ internal sealed class NotificationFileChangeTriggerHost : BackgroundService
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
+        using var cancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(stoppingToken);
+
         _logger.LogInformation(
             "Starting {Host}.",
             nameof(NotificationFileChangeTriggerHost));
@@ -68,7 +70,7 @@ internal sealed class NotificationFileChangeTriggerHost : BackgroundService
                     await fileChangedCh.Writer
                         .WriteAsync(
                             new FileChangedEvent(initialLoadFile.FullPath),
-                            stoppingToken)
+                            cancellationTokenSource.Token)
                         .ConfigureAwait(false);
                 }
             }
@@ -76,11 +78,11 @@ internal sealed class NotificationFileChangeTriggerHost : BackgroundService
 
         // After we have pushed initial load, we subscribe for future changes.
         var subscribeFileChangesTask = _fileChangedSubscriber
-            .Subscribe(fileChangedCh.Writer, stoppingToken);
+            .Subscribe(fileChangedCh.Writer, cancellationTokenSource);
 
         var consumeTask = Task.Run(async () =>
         {
-            await foreach (var fileChange in fileChangedCh.Reader.ReadAllAsync(stoppingToken))
+            await foreach (var fileChange in fileChangedCh.Reader.ReadAllAsync(cancellationTokenSource.Token))
             {
                 try
                 {
@@ -148,10 +150,11 @@ internal sealed class NotificationFileChangeTriggerHost : BackgroundService
                 {
                     _logger.LogCritical("Unhandled {Exception}, stopping service.", ex);
                     fileChangedCh.Writer.TryComplete(ex);
+                    await cancellationTokenSource.CancelAsync().ConfigureAwait(false);
                     throw;
                 }
             }
-        }, stoppingToken);
+        }, cancellationTokenSource.Token);
 
         _logger.LogInformation("Starting subscriber and consumer.");
         await Task.WhenAll(subscribeFileChangesTask, consumeTask).ConfigureAwait(false);
