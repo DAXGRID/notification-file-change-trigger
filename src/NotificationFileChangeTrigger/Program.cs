@@ -15,8 +15,7 @@ internal static class Program
 
         try
         {
-            await host.StartAsync().ConfigureAwait(false);
-            await host.WaitForShutdownAsync().ConfigureAwait(false);
+            await host.RunAsync().ConfigureAwait(false);
         }
         catch (Exception ex)
         {
