@@ -19,12 +19,14 @@ internal static class Program
         // This handles if signal is send to the process.
         AppDomain.CurrentDomain.ProcessExit += (sender, e) =>
         {
+            logger.LogInformation("Received signal process exit.");
             CleanShutdown();
         };
 
         // This handles if user cancels the process.
         Console.CancelKeyPress += (sender, args) =>
         {
+            logger.LogInformation("Received cancel keypress.");
             CleanShutdown();
         };
 
