@@ -28,11 +28,11 @@ RUN apt-get update && \
 # Renew the ARG argument for it to be available in this build context.
 ARG PROJECT_NAME
 
-# Cannot reference ARG in CMD, so we set it in ENV instead.
-ENV EXECUTEABLE=${PROJECT_NAME}.dll
-
 WORKDIR /app
 
 COPY --from=build-env /app/src/${PROJECT_NAME}/out .
 
-CMD dotnet $(echo ${EXECUTEABLE})
+# Cannot use PROJECT_NAME here in environment, have to sadly write out the whole name.
+# There is a hack where you can execute this as an environment variable, but then the process won't have id 1
+# and signal are no longer received.
+ENTRYPOINT ["dotnet", "NotificationFileChangeTrigger.dll"]
