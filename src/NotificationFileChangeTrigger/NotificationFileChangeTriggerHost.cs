@@ -1,4 +1,3 @@
-using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using NotificationFileChangeTrigger.FileServer;
 using NotificationFileChangeTrigger.Notification;
@@ -7,14 +6,14 @@ using System.Threading.Channels;
 
 namespace NotificationFileChangeTrigger;
 
-internal sealed class NotificationFileChangeTriggerHost : BackgroundService
+internal sealed class NotificationFileChangeTriggerHost
 {
-    private readonly ILogger<NotificationFileChangeTriggerHost> _logger;
+    private readonly ILogger _logger;
     private readonly FileChangedSubscriber _fileChangedSubscriber;
     private readonly Settings _settings;
 
     public NotificationFileChangeTriggerHost(
-        ILogger<NotificationFileChangeTriggerHost> logger,
+        ILogger logger,
         FileChangedSubscriber fileChangedSubscriber,
         Settings settings)
     {
@@ -23,7 +22,7 @@ internal sealed class NotificationFileChangeTriggerHost : BackgroundService
         _settings = settings;
     }
 
-    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+    public async Task StartAsync(CancellationToken stoppingToken)
     {
         using var cancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(stoppingToken);
 
@@ -149,14 +148,13 @@ internal sealed class NotificationFileChangeTriggerHost : BackgroundService
                 catch (Exception ex)
                 {
                     _logger.LogCritical("Unhandled {Exception}, stopping service.", ex);
-                    fileChangedCh.Writer.TryComplete(ex);
                     await cancellationTokenSource.CancelAsync().ConfigureAwait(false);
                     throw;
                 }
             }
         }, cancellationTokenSource.Token);
 
-        _logger.LogInformation("Starting subscriber and consumer.");
+        _logger.LogInformation("The subscriber and consumer has now been started.");
         await Task.WhenAll(subscribeFileChangesTask, consumeTask).ConfigureAwait(false);
     }
 }

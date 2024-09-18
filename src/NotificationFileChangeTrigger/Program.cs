@@ -1,6 +1,4 @@
-﻿using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 
 namespace NotificationFileChangeTrigger;
 
@@ -8,18 +6,44 @@ internal static class Program
 {
     public static async Task Main()
     {
-        using var host = HostConfig.Configure();
+        var settings = AppSetting.Load<Settings>();
+        var logger = LoggerFactory.Create(nameof(Program));
+        using var cancellationTokenSource = new CancellationTokenSource();
 
-        var loggerFactory = host.Services.GetService<ILoggerFactory>();
-        var logger = loggerFactory!.CreateLogger(nameof(Program));
+        void CleanShutdown()
+        {
+            logger.LogInformation("Process is exiting.");
+            cancellationTokenSource.Cancel();
+        }
+
+        // This handles if signal is send to the process.
+        AppDomain.CurrentDomain.ProcessExit += (sender, e) =>
+        {
+            CleanShutdown();
+        };
+
+        // This handles if user cancels the process.
+        Console.CancelKeyPress += (sender, args) =>
+        {
+            CleanShutdown();
+        };
+
+        var notificationFileChangeTriggerHost = new NotificationFileChangeTriggerHost(
+            LoggerFactory.Create(nameof(NotificationFileChangeTriggerHost)),
+            new Notification.FileChangedSubscriber(settings),
+            settings
+        );
 
         try
         {
-            await host.RunAsync().ConfigureAwait(false);
+            await notificationFileChangeTriggerHost
+                .StartAsync(cancellationTokenSource.Token)
+                .ConfigureAwait(false);
         }
         catch (Exception ex)
         {
             logger.LogCritical("{Exception}", ex);
+            await cancellationTokenSource.CancelAsync().ConfigureAwait(false);
             throw;
         }
     }
