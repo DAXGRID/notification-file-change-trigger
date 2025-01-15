@@ -9,7 +9,7 @@ executors:
         password: $DOCKER_ACCESSTOKEN
   docker-publisher:
     environment:
-      IMAGE_NAME: openftth/notification-file-change-trigger
+      IMAGE_NAME: daxgrid/notification-file-change-trigger
     docker:
       - image: cimg/base:2023.12
         auth:
@@ -17,7 +17,7 @@ executors:
           password: $DOCKER_ACCESSTOKEN
   alpine-git:
     environment:
-      IMAGE_NAME: openftth/notification-file-change-trigger
+      IMAGE_NAME: daxgrid/notification-file-change-trigger
       CHART_PATH: ./dax/notification-file-change-trigger
       GIT_USER_NAME: "dax-bot"
       GIT_USER_EMAIL: "admin@dax.dk"
