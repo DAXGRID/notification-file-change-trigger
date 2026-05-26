@@ -66,6 +66,12 @@ internal sealed record Settings
     [JsonPropertyName("initialLoadDirectories")]
     public IReadOnlyList<string> InitialLoadDirectories { get; init; }
 
+    [JsonPropertyName("moveFileOnError")]
+    public bool MoveFileOnError { get; init; } = false;
+
+    [JsonPropertyName("moveFileOnErrorPath")]
+    public string? MoveFileOnErrorPath { get; init; }
+
     [JsonConstructor]
     public Settings(
         NotificationServerSettings notificationServer,
@@ -74,7 +80,9 @@ internal sealed record Settings
         string outputDirectoryPath,
         string triggerCommand,
         bool removeFileOnFileServerWhenCompleted,
-        IReadOnlyList<string> initialLoadDirectories)
+        IReadOnlyList<string> initialLoadDirectories,
+        bool moveFileOnError,
+        string? moveFileOnErrorPath)
     {
         NotificationServer = notificationServer;
         FileServer = fileServer;
@@ -83,5 +91,13 @@ internal sealed record Settings
         TriggerCommand = triggerCommand;
         RemoveFileOnFileServerWhenCompleted = removeFileOnFileServerWhenCompleted;
         InitialLoadDirectories = initialLoadDirectories;
+        MoveFileOnError = moveFileOnError;
+
+        if (MoveFileOnError && string.IsNullOrWhiteSpace(moveFileOnErrorPath))
+        {
+            throw new ArgumentException($"If {nameof(MoveFileOnError)} is enabled the {nameof(moveFileOnErrorPath)} needs to not be empty.");
+        }
+
+        MoveFileOnErrorPath = moveFileOnErrorPath;
     }
 }

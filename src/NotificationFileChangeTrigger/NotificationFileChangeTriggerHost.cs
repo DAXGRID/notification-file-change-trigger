@@ -129,9 +129,26 @@ internal sealed class NotificationFileChangeTriggerHost
 
                     if (!triggerResult)
                     {
-                        // The message is written to the log, in the trigger result, so we just
-                        // want the process to die here.
-                        throw new TriggerException($"The trigger failed for the file: '{downloadedFileOutputPath}'.");
+                        if (_settings.MoveFileOnError)
+                        {
+                            // We upload it to the error path.
+                            await httpFileServer
+                                .UploadFile(fileChange.FileName, _settings.MoveFileOnErrorPath!)
+                                .ConfigureAwait(false);
+
+                            // Delete from existing path.
+                            await httpFileServer
+                                .DeleteResource(fileChange.FileName, fileChange.DirectoryName)
+                                .ConfigureAwait(false);
+
+                            continue;
+                        }
+                        else
+                        {
+                            // The message is written to the log, in the trigger result, so we just
+                            // want the process to die here.
+                            throw new TriggerException($"The trigger failed for the file: '{downloadedFileOutputPath}'.");
+                        }
                     }
 
                     if (_settings.RemoveFileOnFileServerWhenCompleted)

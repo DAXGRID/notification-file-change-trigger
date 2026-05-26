@@ -25,6 +25,34 @@ internal sealed class HttpFileServer
         _httpClient = httpClient;
     }
 
+    public async Task UploadFile(string localFilePath, string uploadDirPath)
+    {
+        using var multipartFormContent = new MultipartFormDataContent();
+        using var fs = File.OpenRead(localFilePath);
+        using var streamContent = new StreamContent(fs);
+
+        multipartFormContent.Add(
+            streamContent,
+            name: "file",
+            fileName: Path.GetFileName(localFilePath));
+
+        var response = await _httpClient
+            .PostAsync($"{uploadDirPath}?upload", multipartFormContent)
+            .ConfigureAwait(false);
+
+        // The server might return redirect status code
+        // We take that as a success after an upload.
+        if (!response.IsSuccessStatusCode && response.StatusCode != HttpStatusCode.Redirect)
+        {
+            var errorMessage = await response.Content
+                .ReadAsStringAsync()
+                .ConfigureAwait(false);
+
+            throw new UploadFileException(
+                $"Could not upload file. '{errorMessage}'");
+        }
+    }
+
     public async IAsyncEnumerable<byte[]> DownloadFile(string filePath)
     {
         using var response = await _httpClient.GetStreamAsync(filePath)
