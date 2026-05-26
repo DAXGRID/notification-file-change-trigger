@@ -1,6 +1,6 @@
 namespace NotificationFileChangeTrigger;
 
-public class TriggerException : Exception
+internal sealed class TriggerException : Exception
 {
     public TriggerException() { }
     public TriggerException(string message) : base(message) { }

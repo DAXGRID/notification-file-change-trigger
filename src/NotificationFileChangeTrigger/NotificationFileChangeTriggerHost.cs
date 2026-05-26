@@ -81,7 +81,7 @@ internal sealed class NotificationFileChangeTriggerHost
 
         var consumeTask = Task.Run(async () =>
         {
-            await foreach (var fileChange in fileChangedCh.Reader.ReadAllAsync(cancellationTokenSource.Token))
+            await foreach (var fileChange in fileChangedCh.Reader.ReadAllAsync(cancellationTokenSource.Token).ConfigureAwait(false))
             {
                 try
                 {
@@ -156,5 +156,6 @@ internal sealed class NotificationFileChangeTriggerHost
 
         _logger.LogInformation("The subscriber and consumer has now been started.");
         await Task.WhenAll(subscribeFileChangesTask, consumeTask).ConfigureAwait(false);
+        subscribeFileChangesTask.Dispose();
     }
 }

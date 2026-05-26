@@ -2,7 +2,7 @@ using System.Text.Json.Serialization;
 
 namespace NotificationFileChangeTrigger.Notification;
 
-public sealed record FileChangedEvent
+internal sealed record FileChangedEvent
 {
     [JsonPropertyName("eventId")]
     public Guid EventId { get; init; }

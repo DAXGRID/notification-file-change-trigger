@@ -37,7 +37,7 @@ internal sealed class FileChangedSubscriber : IDisposable
 
             await foreach (var notification in notifications)
             {
-                if (string.CompareOrdinal(notification.Type, "FileChangedEvent") == 0)
+                if (string.Equals(notification.Type, "FileChangedEvent", StringComparison.Ordinal))
                 {
                     var fileChangedEvent = JsonSerializer
                         .Deserialize<FileChangedEvent>(notification.Body);

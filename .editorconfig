@@ -13,3 +13,7 @@ dotnet_diagnostic.CA1812.severity = none
 # CA2234: CA2234: Pass System.Uri objects instead of strings
 # We do not care because this solution is so simple.
 dotnet_diagnostic.CA2234.severity = none
+
+# CA1873
+# We won't disable logging.
+dotnet_diagnostic.CA1873.severity = none
