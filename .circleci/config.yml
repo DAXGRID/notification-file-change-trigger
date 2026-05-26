@@ -3,7 +3,7 @@ version: 2.1
 executors:
   dotnet-core-sdk:
     docker:
-    - image: mcr.microsoft.com/dotnet/sdk:8.0
+    - image: mcr.microsoft.com/dotnet/sdk:10.0
       auth:
         username: $DOCKER_LOGIN
         password: $DOCKER_ACCESSTOKEN
@@ -11,7 +11,7 @@ executors:
     environment:
       IMAGE_NAME: daxgrid/notification-file-change-trigger
     docker:
-      - image: cimg/base:2023.12
+      - image: cimg/base:current
         auth:
           username: $DOCKER_LOGIN
           password: $DOCKER_ACCESSTOKEN
@@ -22,7 +22,7 @@ executors:
       GIT_USER_NAME: "dax-bot"
       GIT_USER_EMAIL: "admin@dax.dk"
       GIT_CLONE_REPO: "git@github.com:DAXGRID/dax-charts.git"
-      SSH_FINGERPRINT: "4e:54:b2:34:da:53:ea:7e:24:00:f0:b2:4d:c6:ab:0d"
+      SSH_FINGERPRINT: "SHA256:jA1MWb2Ex8e8XMKyaWfwYA1tInsCnL06QaO2tXlvlDk"
     docker:
     - image: alpine/git
 
