@@ -133,7 +133,7 @@ internal sealed class NotificationFileChangeTriggerHost
                         {
                             // We upload it to the error path.
                             await httpFileServer
-                                .UploadFile(fileChange.FileName, _settings.MoveFileOnErrorPath!)
+                                .UploadFile(downloadedFileOutputPath, _settings.MoveFileOnErrorPath!)
                                 .ConfigureAwait(false);
 
                             // Delete from existing path.
