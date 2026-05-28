@@ -131,6 +131,8 @@ internal sealed class NotificationFileChangeTriggerHost
                     {
                         if (_settings.MoveFileOnError)
                         {
+                            _logger.LogWarning("Processing the file failed, moving the file to {FileServerPath}", _settings.MoveFileOnErrorPath);
+
                             // We upload it to the error path.
                             await httpFileServer
                                 .UploadFile(downloadedFileOutputPath, _settings.MoveFileOnErrorPath!)
