@@ -143,6 +143,8 @@ internal sealed class NotificationFileChangeTriggerHost
                                 .DeleteResource(fileChange.FileName, fileChange.DirectoryName)
                                 .ConfigureAwait(false);
 
+                            File.Delete(downloadedFileOutputPath);
+
                             continue;
                         }
                         else
