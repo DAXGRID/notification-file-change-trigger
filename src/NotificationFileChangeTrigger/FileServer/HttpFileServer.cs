@@ -112,7 +112,7 @@ internal sealed class HttpFileServer
             .Where(x => x.Attributes["class"].Value == "item-list has-deletable")
             .FirstOrDefault()
             ?.Descendants()
-            .Where(x => x.Attributes["class"]?.Value == "detail")
+            .Where(x => x.Attributes["class"]?.Value == "detail" && x.ParentNode.GetClasses().Contains("file"))
             .Select(x => x.InnerText
                     .Trim()
                     .Split("\n")
