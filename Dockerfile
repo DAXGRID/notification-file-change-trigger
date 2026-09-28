@@ -1,7 +1,7 @@
 ARG PROJECT_NAME=NotificationFileChangeTrigger
 ARG DOTNET_VERSION=10.0
 
-FROM mcr.microsoft.com/dotnet/sdk:${DOTNET_VERSION}-alpine AS build-env
+FROM mcr.microsoft.com/dotnet/sdk:${DOTNET_VERSION}-noble AS build-env
 
 # Renew the ARG argument for it to be available in this build context.
 ARG PROJECT_NAME
@@ -19,17 +19,11 @@ WORKDIR /app/src/${PROJECT_NAME}
 RUN dotnet publish -c Release -o out --packages ./packages
 
 # Build runtime image
-FROM mcr.microsoft.com/dotnet/runtime:${DOTNET_VERSION}-alpine
+FROM mcr.microsoft.com/dotnet/runtime:${DOTNET_VERSION}-noble
 
-# Install bash, GDAL, zip and curl.
-RUN apk add --no-cache \
-    bash \
-    gdal \
-    gdal-tools \
-    gdal-driver-all \
-    unzip \
-    zip \
-    curl 
+# Enable the use of bash and the use of ogr2ogr by installing gdal.
+RUN apt-get update && \
+    apt-get install -y bash gdal-bin zip curl
 
 # Renew the ARG argument for it to be available in this build context.
 ARG PROJECT_NAME
