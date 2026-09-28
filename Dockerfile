@@ -27,6 +27,7 @@ RUN apk add --no-cache \
     gdal \
     gdal-tools \
     gdal-driver-all \
+    unzip \
     zip \
     curl 
 
