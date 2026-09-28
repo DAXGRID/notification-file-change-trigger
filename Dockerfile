@@ -25,8 +25,9 @@ FROM mcr.microsoft.com/dotnet/runtime:${DOTNET_VERSION}-alpine
 RUN apk add --no-cache \
     bash \
     gdal \
+    gdal-tools \
     zip \
-    curl
+    curl 
 
 # Renew the ARG argument for it to be available in this build context.
 ARG PROJECT_NAME
